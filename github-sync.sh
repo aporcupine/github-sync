@@ -26,6 +26,8 @@ fi
 echo "UPSTREAM_REPO=$UPSTREAM_REPO"
 echo "BRANCHES=$BRANCH_MAPPING"
 
+workflow=`cat .github/workflows/repo-sync.yml`
+
 git config --unset-all http."https://github.com/".extraheader || :
 
 echo "Resetting origin to: https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY"
@@ -38,7 +40,11 @@ echo "Fetching tmp_upstream"
 git fetch tmp_upstream --quiet
 git remote --verbose
 
-echo "Pushing changings from tmp_upstream to origin"
+mkdir -p ".github/workflows"
+echo "$workflow" > .github/workflows/repo-sync.yml
+git commit -a -m "add back workflow"
+
+echo "Pushing changes from tmp_upstream to origin"
 git push origin "refs/remotes/tmp_upstream/${BRANCH_MAPPING%%:*}:refs/heads/${BRANCH_MAPPING#*:}" --force
 
 if [[ "$SYNC_TAGS" = true ]]; then
